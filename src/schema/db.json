@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "description": "Database JSON Schema",
+  "additionalProperties": false,
+  "properties": {
+    "tables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "modelName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "type",
+                "displayName",
+                "description"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "displayName",
+          "modelName",
+          "description",
+          "fields"
+        ]
+      }
+    }
+  },
+  "required": [
+    "tables"
+  ]
+}

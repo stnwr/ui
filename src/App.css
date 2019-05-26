@@ -1,33 +1,39 @@
-.App {
-  text-align: center;
+/* .field-editor fieldset .form-group {
+  display: table-cell;
+  padding-right: 5px;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
+.field-editor .field-integer {
+  width: 100px;
+} */
+
+/* 
+div.panel {
+  width: 33%;
+} */
+
+tr a.edit small {
+  display: none;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+tr:hover a.edit small {
+  display: inline-block;
 }
 
-.App-link {
-  color: #61dafb;
+/* .field-editor {
+  text-align: left;
+  display: inline-block;
+  position: absolute;
+  right: 5px;
+} */
+
+/* 
+.form-group.field.field-boolean {
+  width: 50%;
+  display: inline-block;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+.form-group.field.field-integer {
+  width: 50%;
+  display: inline-block;
+} */
