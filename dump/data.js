@@ -2,7 +2,7 @@
 //   {
 //     'name': 'pet',
 //     'modelName': 'Pet',
-//     'displayName': 'Pet',
+//     'title': 'Pet',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -56,7 +56,7 @@
 //   {
 //     'name': 'person',
 //     'modelName': 'Person',
-//     'displayName': 'Person',
+//     'title': 'Person',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -146,7 +146,7 @@
 //   {
 //     'name': 'simple',
 //     'modelName': 'Simple',
-//     'displayName': 'Simple',
+//     'title': 'Simple',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -220,7 +220,7 @@
 //   {
 //     'name': 'student',
 //     'modelName': 'Student',
-//     'displayName': 'Student',
+//     'title': 'Student',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -270,7 +270,7 @@
 //   {
 //     'name': 'course',
 //     'modelName': 'Course',
-//     'displayName': 'Course',
+//     'title': 'Course',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -308,7 +308,7 @@
 //   {
 //     'name': 'enrollment',
 //     'modelName': 'Enrollment',
-//     'displayName': 'Enrollment',
+//     'title': 'Enrollment',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -353,7 +353,7 @@
 //   {
 //     'name': 'studentType',
 //     'modelName': 'StudentType',
-//     'displayName': 'Student type',
+//     'title': 'Student type',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -376,7 +376,7 @@
 //   {
 //     'name': 'customer',
 //     'modelName': 'Customer',
-//     'displayName': 'Customer',
+//     'title': 'Customer',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -435,7 +435,7 @@
 //   {
 //     'name': 'product',
 //     'modelName': 'Product',
-//     'displayName': 'Product',
+//     'title': 'Product',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -469,7 +469,7 @@
 //   {
 //     'name': 'basket',
 //     'modelName': 'Basket',
-//     'displayName': 'Basket',
+//     'title': 'Basket',
 //     'fields': [
 //       {
 //         'name': 'id',
@@ -499,7 +499,7 @@
 //   {
 //     'name': 'basketLine',
 //     'modelName': 'BasketLine',
-//     'displayName': 'Basket line',
+//     'title': 'Basket line',
 //     'fields': [
 //       {
 //         'name': 'id',

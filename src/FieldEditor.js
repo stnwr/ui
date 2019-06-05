@@ -2,15 +2,62 @@ import React from 'react'
 import Form from 'react-jsonschema-form'
 import update from 'immutability-helper'
 import { enumTypes } from './schema/types.js'
+import { getSchemaFromField } from '@stoneware/common/helpers/schema'
+
+function CustomFieldTemplate (props) {
+  const { id, classNames, label, help, required, description, errors, children } = props
+  return (
+    <div className={classNames}>
+      <label htmlFor={id}><strong>{label}</strong> {required ? '*' : null}</label>
+      {description}
+      {children}
+      {errors}
+      {help}
+    </div>
+  )
+}
 
 const Editor = (props) => {
-  const { schema, formData, uiSchema, onChange, onSubmit, onError, nullable = true } = props
+  const { field, schema, formData, uiSchema, onChange,
+    onSubmit, onError, nullable = true } = props
+
+  const defaultSupportedTypes = [
+    'string', 'date', 'datetime',
+    'time', 'integer', 'number', 'boolean'
+  ]
+
+  const defaultProp = {}
+  if (defaultSupportedTypes.includes(field.type)) {
+    const fieldSchema = getSchemaFromField(field)
+    defaultProp.default = {
+      type: fieldSchema.type,
+      title: 'Default value',
+      format: fieldSchema.format,
+      enum: fieldSchema.enum
+    }
+  }
+
+  const enumSupportedTypes = [
+    'string', 'integer'
+  ]
+
+  const enumProp = {}
+  if (enumSupportedTypes.includes(field.type)) {
+    const fieldSchema = getSchemaFromField(field)
+    enumProp.enum = {
+      type: 'array',
+      items: {
+        type: fieldSchema.type
+      },
+      title: 'Enum'
+    }
+  }
 
   const editorSchema = {
     type: 'object',
     required: Array.isArray(schema.required)
-      ? ['name', 'type'].concat(schema.required)
-      : ['name', 'type'],
+      ? ['name', 'type', 'title'].concat(schema.required)
+      : ['name', 'type', 'title'],
     properties: Object.assign({
       name: { type: 'string', title: 'Name' },
       type: { type: 'string', title: 'Type', enum: enumTypes },
@@ -18,7 +65,13 @@ const Editor = (props) => {
       description: { type: 'string', title: 'Description' }
     }, schema.properties, nullable ? {
       nullable: { type: 'boolean', title: 'Nullable' }
-    } : {})
+    } : {}, {
+      virtual: {
+        type: 'boolean',
+        title: 'Virtual',
+        description: 'Virtual fields aren\'t persisted. You must provide a property (or method) in the model class.'
+      }
+    }, defaultProp, enumProp)
   }
 
   const editorUiSchema = Object.assign({}, uiSchema, {
@@ -34,7 +87,9 @@ const Editor = (props) => {
     uiSchema={editorUiSchema}
     onChange={onChange}
     onSubmit={onSubmit}
-    onError={onError} />
+    onError={onError}
+    // FieldTemplate={CustomFieldTemplate}
+  />
 }
 
 const DefaultEditor = (props) => {
@@ -129,6 +184,25 @@ const BooleanEditor = (props) => {
     {...props} />
 }
 
+const JsonEditor = (props) => {
+  const field = props.field
+
+  const schema = {
+    required: ['ref'],
+    properties: {
+      ref: { type: 'string', title: 'Ref' }
+    }
+  }
+
+  const uiSchema = {}
+
+  return <Editor
+    schema={schema}
+    formData={field}
+    uiSchema={uiSchema}
+    {...props} />
+}
+
 class RelationEditor extends React.Component {
   constructor (props) {
     super(props)
@@ -143,7 +217,7 @@ class RelationEditor extends React.Component {
       properties: {
         kind: { type: 'string', title: 'Kind', enum: ['BelongsToOne', 'HasOne', 'HasMany'] },
         from: { type: 'string', title: 'From', enum: table.fields.map(f => f.name) },
-        table: { type: 'string', title: 'Table', enum: tables.map(t => t.name), enumNames: tables.map(t => t.displayName) },
+        table: { type: 'string', title: 'Table', enum: tables.map(t => t.name), enumNames: tables.map(t => t.title) },
         to: { type: 'string', title: 'To', enum: field.table && RelationEditor.getToEnums(field.table, tables) }
       }
     }
@@ -215,6 +289,7 @@ const typeEditors = {
   'integer': IntegerEditor,
   'boolean': BooleanEditor,
   'number': NumberEditor,
+  'json': JsonEditor,
   'relation': RelationEditor
 }
 
@@ -222,27 +297,34 @@ class FieldEditor extends React.Component {
   constructor (props) {
     super(props)
     console.log('ctor')
+    this.state = {
+      formData: props.field
+    }
   }
 
-  // state = {}
+  componentWillReceiveProps (props) {
+    this.setState({
+      formData: props.field
+    })
+  }
 
-  // onClick = (e) => {
-  //   if (this.state.showEditor) {
-  //     this.setState({ showEditor: false })
-  //     document.body.classList.remove('modal-open')
-  //   } else {
-  //     this.setState({ showEditor: { top: e.clientY, left: e.clientX } })
-  //     document.body.classList.add('modal-open')
-  //   }
-  // }
+  onChange = (e) => {
+    const { formData } = e
+    this.setState({ formData })
+
+    if (this.props.onChange) {
+      this.props.onChange(e)
+    }
+  }
 
   render () {
-    const { field } = this.props
+    // const { field } = this.props
+    const field = this.state.formData
     const Type = typeEditors[field.type] || DefaultEditor
 
     return (
       <div className='field-editor'>
-        <Type field={field} {...this.props} />
+        <Type {...this.props} field={field} onChange={this.onChange} />
       </div>
     )
   }

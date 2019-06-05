@@ -1,39 +1,16 @@
-/* .field-editor fieldset .form-group {
-  display: table-cell;
-  padding-right: 5px;
+.field-array .btn {
+  padding: 1px 4px;
+  font-size: 10px;
 }
 
-.field-editor .field-integer {
-  width: 100px;
-} */
-
-/* 
-div.panel {
-  width: 33%;
-} */
-
-tr a.edit small {
-  display: none;
+legend {
+  font-size: initial;
 }
 
-tr:hover a.edit small {
-  display: inline-block;
+.lookup-widget .search {
+  position: relative;
 }
 
-/* .field-editor {
-  text-align: left;
-  display: inline-block;
+.lookup-widget .results {
   position: absolute;
-  right: 5px;
-} */
-
-/* 
-.form-group.field.field-boolean {
-  width: 50%;
-  display: inline-block;
 }
-
-.form-group.field.field-integer {
-  width: 50%;
-  display: inline-block;
-} */

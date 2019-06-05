@@ -11,7 +11,7 @@
           "name": {
             "type": "string"
           },
-          "displayName": {
+          "title": {
             "type": "string"
           },
           "modelName": {
@@ -31,7 +31,7 @@
                 "type": {
                   "type": "string"
                 },
-                "displayName": {
+                "title": {
                   "type": "string"
                 },
                 "description": {
@@ -41,7 +41,7 @@
               "required": [
                 "name",
                 "type",
-                "displayName",
+                "title",
                 "description"
               ]
             }
@@ -49,7 +49,7 @@
         },
         "required": [
           "name",
-          "displayName",
+          "title",
           "modelName",
           "description",
           "fields"
