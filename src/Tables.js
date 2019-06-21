@@ -28,7 +28,8 @@ const tableSchema = {
     description: { type: 'string', title: 'Description' },
     modelName: { type: 'string', title: 'Model name' },
     modelPath: { type: 'string', title: 'Model path' },
-    defaultTextField: { type: 'string', title: 'Default text field' }
+    defaultTextField: { type: 'string', title: 'Default text field' },
+    primaryKeyField: { type: 'array', title: 'Primary key', items: { type: 'string' } }
   }
 }
 
@@ -59,6 +60,10 @@ class Tables extends React.Component {
     super(props)
     const { app } = props
     this.state = { app }
+
+    setInterval(() => {
+      window.localStorage.setItem('appjson', JSON.stringify(this.state.app, null, 2))
+    }, 20 * 1000)
   }
 
   onSubmitUpdateField = (e) => {
@@ -234,7 +239,10 @@ class Tables extends React.Component {
 
       default:
         const textField = tableSchema.properties.defaultTextField
+        const primaryField = tableSchema.properties.primaryKeyField
         const strings = f => f.type === 'string'
+        primaryField.items.enum = active.table.fields.map(f => f.name)
+        primaryField.items.enumNames = active.table.fields.map(f => f.name)
         textField.enum = active.table.fields.filter(strings).map(f => f.name)
         textField.enumNames = active.table.fields.filter(strings).map(f => f.title || f.name)
 
@@ -351,6 +359,8 @@ class Tables extends React.Component {
             })}
           </div>
           <BootstrapTable keyField='id' data={data} columns={columns} />
+          <pre>{JSON.stringify(app, null, 2)}</pre>
+          <a onClick={e => { var json = window.prompt('JSON'); json && this.setState({ app: JSON.parse(json) }) }}>Load</a>
         </div>
         <div className='col-sm-3 col-md-3 sidebar right'>
           {active ? this.getActiveEditor() : (

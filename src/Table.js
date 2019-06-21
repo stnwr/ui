@@ -7,7 +7,7 @@ import assert from './assert.js'
 import './Dashboard.css'
 import './App.css'
 import api from './api.js'
-import { getSchemaFromTable, generateUISchema } from '@stoneware/common/helpers/schema'
+import { generateUISchema } from '@stoneware/common/helpers/schema'
 
 const CustomDescriptionField = ({ id, description }) => {
   if (!description) {
@@ -55,7 +55,7 @@ class LookupWidget extends React.Component {
     const { mode, results } = state
     const { app, table, data } = formContext
     const { displayField, relation, table: toTable, to } = options
-    const display = data[relation][displayField]
+    const display = data[relation] && data[relation][displayField]
 
     return (
       <div className='lookup-widget'>
@@ -150,9 +150,9 @@ class Table extends React.Component {
       const query = `?eager=[${eager}]${search && '&' + search.slice(1)}`
       const dataResult = await api.get(`/api/table/${table.name}${query}`)
       assert(dataResult.ok)
-      // const schemaResult = await api.get(`/api/table/${table.name}/schema`)
-      // assert(schemaResult.ok)
-      const schema = getSchemaFromTable(table)
+      const schemaResult = await api.get(`/api/table/${table.name}/schema`)
+      assert(schemaResult.ok)
+      const schema = schemaResult.data
       // const uiSchemaResult = await api.get(`/api/table/${table.name}/ui/schema`)
       // assert(uiSchemaResult.ok)
 
@@ -160,7 +160,7 @@ class Table extends React.Component {
       const lookupRelations = relations.filter(r =>
         r.kind === 'HasOne' || r.kind === 'BelongsToOne')
 
-      lookupRelations.length = 0
+      // lookupRelations.length = 0
       if (lookupRelations.length) {
         // const uiSchema = uiSchemaResult.data
         // Modify the ui schema by
@@ -200,6 +200,13 @@ class Table extends React.Component {
     this.setTable(props)
   }
 
+  onClickAdd (e) {
+    // Add row
+    this.setState({
+      active: {}
+    })
+  }
+
   render () {
     const { app } = this.props
     const { table, data, schema, uiSchema, active } = this.state
@@ -208,46 +215,91 @@ class Table extends React.Component {
       return ''
     }
 
-    const columns = Object.keys(schema.properties)
-      .filter(key => !schema.properties[key].$ref &&
-        schema.properties[key].type !== 'object')
-      .filter(key => !uiSchema[key] ||
-        uiSchema[key]['ui:widget'] !== 'hidden')
+    const columns = []
+
+    table.fields
+      // .filter(() => false)
+      .filter(f => f.type !== 'json') //  && f.type !== 'relation'
+      .filter(f => !uiSchema[f.name] || uiSchema[f.name]['ui:widget'] !== 'hidden')
+      .forEach(f => {
+        if (f.type !== 'relation') {
+          // Add it as a column unless it has a BelongsToOne relation buddy field.
+          const hasRelation = !!table.fields.find(field =>
+            field.type === 'relation' &&
+            field.kind === 'BelongsToOne' &&
+            field.from === f.name)
+
+          if (!hasRelation) {
+            const column = {
+              dataField: f.name,
+              text: (uiSchema[f.name] && uiSchema[f.name]['ui:title']) || (f.title || f.name)
+            }
+            columns.push(column)
+          }
+        } else {
+          const target = app.tables.find(t => t.name === f.table)
+
+          const column = f.kind === 'HasMany' ? {
+            dataField: `id`,
+            text: f.title,
+            formatter: linkFormatter,
+            formatExtraData: {
+              getHref: (data) => `/table/${target.name}?${f.to}:eq=${data[f.from]}`,
+              getText: () => f.title
+            }
+          } : {
+            dataField: `${f.name}.${target.defaultTextField}`,
+            text: f.title,
+            formatter: linkFormatter,
+            formatExtraData: {
+              getHref: (data) => `/table/${target.name}?${f.to}:eq=${data[f.from]}`,
+              getText: (data, cell) => cell || f.title
+            }
+          }
+
+          columns.push(column)
+        }
+      })
+
+    const columns1 = Object.keys(schema.properties)
+      .filter(key => schema.properties[key].type !== 'object')
+      .filter(key => !uiSchema[key] || uiSchema[key]['ui:widget'] !== 'hidden')
       .map(key => {
         const columnConfig = {
           dataField: key,
-          text: (uiSchema && uiSchema[key] && uiSchema[key]['ui:title']) || key
+          text: (uiSchema[key] && uiSchema[key]['ui:title']) || key
         }
 
         return columnConfig
-      }).concat(
-        table.fields
-          .filter(f => false)
-          .filter(f => f.type === 'relation')
-          // .filter(f => f.kind === 'BelongsToOne' || f.kind === 'HasOne')
-          .filter(f => f.kind === 'HasMany' || app.tables.find(t => t.name === f.table).defaultTextField)
-          .map(f => {
-            const target = app.tables.find(t => t.name === f.table)
+      })
+      // .concat(
+      //   table.fields
+      //     // .filter(f => false)
+      //     .filter(f => f.type === 'relation')
+      //     // .filter(f => f.kind === 'BelongsToOne' || f.kind === 'HasOne')
+      //     .filter(f => f.kind === 'HasMany' || app.tables.find(t => t.name === f.table).defaultTextField)
+      //     .map(f => {
+      //       const target = app.tables.find(t => t.name === f.table)
 
-            return f.kind === 'HasMany' ? {
-              dataField: `id`,
-              text: f.title,
-              formatter: linkFormatter,
-              formatExtraData: {
-                getHref: (data) => `/table/${target.name}?${f.to}:eq=${data[f.from]}`,
-                getText: () => f.title
-              }
-            } : {
-              dataField: `${f.name}.${target.defaultTextField}`,
-              text: f.title,
-              formatter: linkFormatter,
-              formatExtraData: {
-                getHref: (data) => `/table/${target.name}?${f.to}:eq=${data[f.from]}`,
-                getText: (data, cell) => cell
-              }
-            }
-          })
-      )
+      //       return f.kind === 'HasMany' ? {
+      //         dataField: `id`,
+      //         text: f.title,
+      //         formatter: linkFormatter,
+      //         formatExtraData: {
+      //           getHref: (data) => `/table/${target.name}?${f.to}:eq=${data[f.from]}`,
+      //           getText: () => f.title
+      //         }
+      //       } : {
+      //         dataField: `${f.name}.${target.defaultTextField}`,
+      //         text: f.title,
+      //         formatter: linkFormatter,
+      //         formatExtraData: {
+      //           getHref: (data) => `/table/${target.name}?${f.to}:eq=${data[f.from]}`,
+      //           getText: (data, cell) => cell
+      //         }
+      //       }
+      //     })
+      // )
 
     const rowEvents = {
       onClick: (e, row, rowIndex) => {
@@ -262,6 +314,7 @@ class Table extends React.Component {
         <div className='col-md-7 col-md-offset-2 main'>
           <h4>{table.title}</h4>
           <BootstrapTable keyField='id' data={data} columns={columns} rowEvents={rowEvents} hover />
+          <a onClick={() => this.onClickAdd()}>Add</a>
           <pre>{JSON.stringify({ schema, uiSchema }, null, 2)}</pre>
         </div>
         <div className='col-md-3 sidebar right'>

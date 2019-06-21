@@ -53,6 +53,17 @@ const Editor = (props) => {
     }
   }
 
+  const virtualSupportedTypes = defaultSupportedTypes
+
+  const virtualProp = {}
+  if (virtualSupportedTypes.includes(field.type)) {
+    virtualProp.virtual = {
+      type: 'boolean',
+      title: 'Virtual',
+      description: 'Virtual fields aren\'t persisted. You must provide a property (or method) in the model class.'
+    }
+  }
+
   const editorSchema = {
     type: 'object',
     required: Array.isArray(schema.required)
@@ -65,13 +76,7 @@ const Editor = (props) => {
       description: { type: 'string', title: 'Description' }
     }, schema.properties, nullable ? {
       nullable: { type: 'boolean', title: 'Nullable' }
-    } : {}, {
-      virtual: {
-        type: 'boolean',
-        title: 'Virtual',
-        description: 'Virtual fields aren\'t persisted. You must provide a property (or method) in the model class.'
-      }
-    }, defaultProp, enumProp)
+    } : {}, virtualProp, defaultProp, enumProp)
   }
 
   const editorUiSchema = Object.assign({}, uiSchema, {
@@ -203,6 +208,26 @@ const JsonEditor = (props) => {
     {...props} />
 }
 
+const FkEditor = (props) => {
+  const { field, tables } = props
+
+  const schema = {
+    required: ['table', 'field'],
+    properties: {
+      table: { type: 'string', title: 'Table', enum: tables.map(t => t.name), enumNames: tables.map(t => t.title) },
+      field: { type: 'string', title: 'Field', enum: field.table ? tables.find(t => t.name === field.table).fields.map(f => f.name) : undefined }
+    }
+  }
+
+  const uiSchema = {}
+
+  return <Editor
+    schema={schema}
+    formData={field}
+    uiSchema={uiSchema}
+    {...props} />
+}
+
 class RelationEditor extends React.Component {
   constructor (props) {
     super(props)
@@ -289,6 +314,7 @@ const typeEditors = {
   'integer': IntegerEditor,
   'boolean': BooleanEditor,
   'number': NumberEditor,
+  'fk': FkEditor,
   'json': JsonEditor,
   'relation': RelationEditor
 }
